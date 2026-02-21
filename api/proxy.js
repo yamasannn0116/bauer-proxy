@@ -16,18 +16,22 @@ export default async function handler(req, res) {
   try {
     const body = req.body;
 
-    // LINE webhookから userId を抽出
-    const userId = body?.events?.[0]?.source?.userId;
+    // LINE検証時は events がないので200を返す
+    if (!body.events || body.events.length === 0) {
+      return res.status(200).send("OK");
+    }
+
+    const userId = body.events[0]?.source?.userId;
 
     if (!userId) {
-      return res.status(400).json({ ok: false, error: "userId missing" });
+      return res.status(200).send("OK");
     }
 
     const form = new URLSearchParams({
       line_user_id: userId
     });
 
-    const gasRes = await fetch(GAS_URL, {
+    await fetch(GAS_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
@@ -35,14 +39,9 @@ export default async function handler(req, res) {
       body: form.toString()
     });
 
-    const text = await gasRes.text();
-
-    return res.status(200).send(text);
+    return res.status(200).send("OK");
 
   } catch (error) {
-    return res.status(500).json({
-      ok: false,
-      error: String(error)
-    });
+    return res.status(200).send("OK");
   }
 }
