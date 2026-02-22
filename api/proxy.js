@@ -15,13 +15,9 @@ export default async function handler(req, res) {
 
   try {
     const body = req.body;
-
-    // LINE検証時は events がないので200を返す
-    if (!body.events || body.events.length === 0) {
-      return res.status(200).send("OK");
-    }
-
-    const userId = body.events[0]?.source?.userId;
+    console.log("BODY:", JSON.stringify(body));    
+    
+    const userId = body?.events?.[0]?.source?.userId;
 
     if (!userId) {
       return res.status(200).send("OK");
