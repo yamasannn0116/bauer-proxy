@@ -1,32 +1,26 @@
-export const config = {
-  api: {
-    bodyParser: true,
-  },
-};
-
 export default async function handler(req, res) {
+  console.log("HIT /api/proxy");
+
   if (req.method !== "POST") {
     return res.status(200).send("OK");
   }
 
   const gasUrl = process.env.GAS_URL;
+  console.log("GAS_URL:", gasUrl);
 
-  if (!gasUrl) {
-    console.error("GAS_URL not set");
-    return res.status(200).send("OK");
+  try {
+    const response = await fetch(gasUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(req.body),
+    });
+
+    const text = await response.text();
+    console.log("GAS RESPONSE:", text);
+
+  } catch (err) {
+    console.error("GAS Forward Error:", err);
   }
 
-  // ★ 即200返す（最重要）
-  res.status(200).send("OK");
-
-  // ★ 非同期でGASへ転送（awaitしない）
-  fetch(gasUrl, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(req.body),
-  }).catch(err => {
-    console.error("GAS Forward Error:", err);
-  });
+  return res.status(200).send("OK");
 }
